@@ -22,9 +22,8 @@ public class FilmReport {
         }
         createTables();
     }
-    public void createTables(){
+    private void createTables() {
         try (Statement statement = connection.createStatement()) {
-
             // Create actor table
             String createActorTableSQL = "CREATE TABLE actor (" +
                     "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
@@ -36,7 +35,10 @@ public class FilmReport {
             // Create film table
             String createFilmTableSQL = "CREATE TABLE film (" +
                     "film_id INT AUTO_INCREMENT PRIMARY KEY," +
-                    "title VARCHAR(255) NOT NULL)";
+                    "title VARCHAR(255) NOT NULL," +
+                    "description TEXT," +  // Adding description column
+                    "length_minutes INT UNSIGNED," + // Adding length_minutes column
+                    "CONSTRAINT fk_actor_film FOREIGN KEY (film_id) REFERENCES actor(actor_id))"; // Adding foreign key constraint
 
             statement.executeUpdate(createFilmTableSQL);
 
@@ -76,11 +78,13 @@ public class FilmReport {
         return films.toArray(filmsArray);
     }
     /*
-    *
     public String[] getSimilarTitles( String[]){
 
     }
     */
+    private boolean areSimilar(String fiveWordFirst,String fiveWordSecond,int minsFirst,int minsSecond){
+        return (fiveWordFirst == fiveWordSecond) && (minsFirst-minsSecond<=2 || minsSecond-minsFirst<=2);
+    }
     private String WordWithFiveLetters(String s){
         if(s.length()<5){
             System.out.println("String s has a length lower than 5 at: WordWithFiveLetters");
@@ -89,9 +93,12 @@ public class FilmReport {
         String word="";
         for(int i=0; i<s.length();i++){
             char ch = s.charAt(i);
+
             if(!(Character.isDigit(ch) || Character.isWhitespace(ch)) && word.length()<5){
                 word+=ch;
             }
+            else if(word.length()==5)
+                break;
             else {
                 word="";
                 continue;
