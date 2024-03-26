@@ -78,12 +78,48 @@ public class FilmReport {
         return films.toArray(filmsArray);
     }
     /*
-    public String[] getSimilarTitles( String[]){
+    public String[] getSimilarTitles( String[] titles){
 
     }
     */
+    private List<String[]> fetchMoviesAlphabetical() {
+        List<String> names = new ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
+        List<String> times = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, username, password)) {
+            String query = "SELECT title, description, length_minutes FROM film ORDER BY title ASC";
+
+            try (PreparedStatement statement = connection.prepareStatement(query);
+                 ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    String title = resultSet.getString("title");
+                    String description = resultSet.getString("description");
+                    int lengthMinutes = resultSet.getInt("length_minutes");
+
+                    // Add movie data to the respective lists
+                    names.add(title);
+                    descriptions.add(description);
+                    times.add(String.valueOf(lengthMinutes));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Convert lists to arrays and return as a list of arrays
+        List<String[]> movieData = new ArrayList<>();
+        movieData.add(names.toArray(new String[names.size()]));
+        movieData.add(descriptions.toArray(new String[descriptions.size()]));
+        movieData.add(times.toArray(new String[times.size()]));
+
+        return movieData;
+    }
+
     private boolean areSimilar(String fiveWordFirst,String fiveWordSecond,int minsFirst,int minsSecond){
-        return (fiveWordFirst == fiveWordSecond) && (minsFirst-minsSecond<=2 || minsSecond-minsFirst<=2);
+        return ((WordWithFiveLetters(fiveWordFirst)!=""&& WordWithFiveLetters(fiveWordSecond)!="")
+                &&(WordWithFiveLetters(fiveWordFirst) == WordWithFiveLetters(fiveWordSecond))) && (minsFirst-minsSecond<=2 || minsSecond-minsFirst<=2);
     }
     private String WordWithFiveLetters(String s){
         if(s.length()<5){
