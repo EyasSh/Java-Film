@@ -82,6 +82,55 @@ public class FilmReport {
 
     }
     */
+    private List<String[]> fetchMoviesByTitles (String[] titles){
+        List<String> names = new ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
+        List<String> times = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, username, password)) {
+            // Create a placeholder for the IN clause
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < titles.length; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("?");
+            }
+
+            // Prepare SQL query with dynamic IN clause
+            String query = "SELECT title, description, length_minutes FROM film WHERE title IN (" + placeholders + ")";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                // Set titles as parameters for the IN clause
+                for (int i = 0; i < titles.length; i++) {
+                    statement.setString(i + 1, titles[i]);
+                }
+
+                // Execute the query
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String title = resultSet.getString("title");
+                        String description = resultSet.getString("description");
+                        int lengthMinutes = resultSet.getInt("length_minutes");
+
+                        // Add movie data to the respective lists
+                        names.add(title);
+                        descriptions.add(description);
+                        times.add(String.valueOf(lengthMinutes));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Convert lists to arrays and return as a list of arrays
+        List<String[]> movieData = new ArrayList<>();
+        movieData.add(names.toArray(new String[names.size()]));
+        movieData.add(descriptions.toArray(new String[descriptions.size()]));
+        movieData.add(times.toArray(new String[times.size()]));
+
+        return movieData;
+    }
     private List<String[]> fetchMoviesAlphabetical() {
         List<String> names = new ArrayList<>();
         List<String> descriptions = new ArrayList<>();
