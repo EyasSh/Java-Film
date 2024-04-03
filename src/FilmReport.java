@@ -77,11 +77,61 @@ public class FilmReport {
         String[] filmsArray = new String[films.size()];
         return films.toArray(filmsArray);
     }
-    /*
-    public String[] getSimilarTitles( String[] titles){
 
+    public String[] getSimilarTitles( String[] titles){
+        if (titles.length==0){
+            System.out.println("Title array is empty");
+            return  new String[0];
+        }
+
+        else
+        {
+            List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
+            List<String[]> allMovies = fetchMoviesAlphabetical();
+            if(allMovies.size()==3 && moviesByTitlesData.size()==3)
+            {
+                //get the data from the title arrList
+                String[] titlesASC = moviesByTitlesData.get(0);
+                String[] descriptionsFromTitles = moviesByTitlesData.get(1);
+                String[] timesFromTitles =moviesByTitlesData.get(2);
+                //get the data of all movies
+                String[] allTitles =allMovies.get(0);
+                String[] allDescriptions = allMovies.get(1);
+                String[] allTimes = allMovies.get(2);
+                // Declaring result list
+                List<String> resultList = new ArrayList<>();
+                String similarTitles= "";
+                for (int i =0; i< titlesASC.length;i++)
+                {
+                    for(int j=0; j<allTitles.length;j++)
+                    {
+                        if(!areSimilar(descriptionsFromTitles[i],allDescriptions[j],Integer.parseInt(timesFromTitles[i]),Integer.parseInt(allTimes[j]))){
+                            continue;
+                        }
+                        else
+                            similarTitles+=":"+allTitles[j];
+                    }
+                    if(similarTitles.isEmpty())
+                        continue;
+                    else{
+                        resultList.add(titlesASC[i]+":"+similarTitles);
+                        similarTitles="";
+                        continue;
+                    }
+                }
+                return resultList.toArray(new String[resultList.size()]);
+
+            }
+            else
+            {
+                System.out.println("The array lists in the similar tiles method do not have the appropriate size");
+                return  new String[0];
+            }
+
+
+        }
     }
-    */
+
     private List<String[]> fetchMoviesByTitles (String[] titles){
         List<String> names = new ArrayList<>();
         List<String> descriptions = new ArrayList<>();
@@ -96,8 +146,8 @@ public class FilmReport {
                 placeholders.append("?");
             }
 
-            // Prepare SQL query with dynamic IN clause
-            String query = "SELECT title, description, length_minutes FROM film WHERE title IN (" + placeholders + ")";
+            // Prepare SQL query with dynamic IN clause and ORDER BY
+            String query = "SELECT title, description, length_minutes FROM film WHERE title IN (" + placeholders + ") ORDER BY title ASC";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 // Set titles as parameters for the IN clause
@@ -126,8 +176,8 @@ public class FilmReport {
         // Convert lists to arrays and return as a list of arrays
         List<String[]> movieData = new ArrayList<>();
         movieData.add(names.toArray(new String[names.size()]));
-        movieData.add(descriptions.toArray(new String[descriptions.size()]));
-        movieData.add(times.toArray(new String[times.size()]));
+        movieData.add(descriptions.toArray(new String[names.size()]));
+        movieData.add(times.toArray(new String[names.size()]));
 
         return movieData;
     }
@@ -167,7 +217,7 @@ public class FilmReport {
     }
 
     private boolean areSimilar(String fiveWordFirst,String fiveWordSecond,int minsFirst,int minsSecond){
-        return ((WordWithFiveLetters(fiveWordFirst)!=""&& WordWithFiveLetters(fiveWordSecond)!="")
+        return ((WordWithFiveLetters(fiveWordFirst)!=""&& WordWithFiveLetters(fiveWordSecond)!="") && (fiveWordFirst!=fiveWordSecond)
                 &&(WordWithFiveLetters(fiveWordFirst) == WordWithFiveLetters(fiveWordSecond))) && (minsFirst-minsSecond<=2 || minsSecond-minsFirst<=2);
     }
     private String WordWithFiveLetters(String s){
