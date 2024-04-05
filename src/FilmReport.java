@@ -1,3 +1,4 @@
+import java.rmi.UnexpectedException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +14,11 @@ public class FilmReport {
         this.username=username;
         this.password=password;
         try {
-             connection = DriverManager.getConnection(DB_URL,this.username,this.password);
-
-        }
-        catch (Exception e)
-        {
-          throw new UnknownError("Connection to DB failed");
+            connection = DriverManager.getConnection(DB_URL, this.username, this.password);
+            createTables();
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle connection failure
+            throw e;
         }
         createTables();
     }
@@ -71,14 +71,15 @@ public class FilmReport {
                 films.add(filmTitle);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw  e;
         }
         // Convert List<String> to String[]
         String[] filmsArray = new String[films.size()];
         return films.toArray(filmsArray);
     }
 
-    public String[] getSimilarTitles( String[] titles){
+    public String[] getSimilarTitles( String[] titles) throws Exception
+    {
         if (titles.length==0){
             System.out.println("Title array is empty");
             return  new String[0];
@@ -86,11 +87,13 @@ public class FilmReport {
 
         else
         {
-            List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
-            List<String[]> allMovies = fetchMoviesAlphabetical();
+
+                List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
+                List<String[]> allMovies = fetchMoviesAlphabetical();
             if(allMovies.size()==3 && moviesByTitlesData.size()==3)
             {
                 //get the data from the title arrList
+
                 String[] titlesASC = moviesByTitlesData.get(0);
                 String[] descriptionsFromTitles = moviesByTitlesData.get(1);
                 String[] timesFromTitles =moviesByTitlesData.get(2);
@@ -125,6 +128,8 @@ public class FilmReport {
             else
             {
                 System.out.println("The array lists in the similar tiles method do not have the appropriate size");
+                UnexpectedException e =new UnexpectedException("Lists do not have the proper size in getSimilarTitles");
+                e.printStackTrace();
                 return  new String[0];
             }
 
