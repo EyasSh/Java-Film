@@ -8,7 +8,16 @@ public class FilmReport {
     private String username;
     private  String password;
     Connection connection;
-
+    /**
+     * Constructs a FilmReport object with the provided username and password.
+     * The constructor initializes the database connection using the provided credentials
+     * to establish a connection to the database. Additionally, it calls the createTables method
+     * to ensure that required tables are created in the database.
+     *
+     * @param username the username used to connect to the database.
+     * @param password the password used to connect to the database.
+     * @throws Exception if an error occurs during the database connection setup or table creation.
+     */
     public FilmReport(String username, String password) throws Exception
     {
         this.username=username;
@@ -20,7 +29,6 @@ public class FilmReport {
             e.printStackTrace(); // Handle connection failure
             throw e;
         }
-        createTables();
     }
     private void createTables() {
         try (Statement statement = connection.createStatement()) {
@@ -48,7 +56,17 @@ public class FilmReport {
             e.printStackTrace();
         }
     }
-
+    /**
+     * Retrieves a list of film titles featuring an actor with the specified first name and last name.
+     * The method executes a SQL query to select film titles from the database, filtering films by
+     * the given actor's first name and last name. The query is parameterized to prevent SQL injection
+     * vulnerabilities. The result is a string array containing the titles of the films featuring the actor.
+     *
+     * @param firstName the first name of the actor.
+     * @param lastName  the last name of the actor.
+     * @return an array of strings representing the titles of films featuring the actor.
+     * @throws SQLException if an SQL exception occurs while executing the query.
+     */
     public String[] getFilmsByActor(String firstName,String lastName) throws Exception
     {
         List<String> films = new ArrayList<>();
@@ -77,7 +95,20 @@ public class FilmReport {
         String[] filmsArray = new String[films.size()];
         return films.toArray(filmsArray);
     }
-
+    /**
+     * Retrieves movies with similar titles based on specific criteria from an array of movie titles.
+     * The method takes an array of movie titles as input and returns an array of movies with similar titles,
+     * where similarity is determined by movies sharing commonalities in their descriptions and running times.
+     * Movies are considered similar if:
+     * - Their descriptions contain at least one common word with exactly five letters.
+     * - Their running times differ by two minutes or less.
+     *
+     * @param titles an array of movie titles for which similar titles are to be retrieved.
+     * @return an array of strings representing similar movie titles along with their corresponding similar titles.
+     *         Each string contains the original movie title followed by a colon ':' and the titles of similar movies,
+     *         separated by colons ':'.
+     * @throws Exception if an unexpected exception occurs during the execution of the method.
+     */
     public String[] getSimilarTitles( String[] titles) throws Exception
     {
         if (titles.length==0){
@@ -136,7 +167,18 @@ public class FilmReport {
 
         }
     }
-
+    /**
+     * Fetches movie details (titles, descriptions, and times) based on the provided titles.
+     * The method queries the database to retrieve movie details for the titles provided in the input array.
+     * It constructs and executes a SQL query with a dynamic IN clause to efficiently fetch movie details
+     * for multiple titles at once. The retrieved movie details are then added to separate lists for titles,
+     * descriptions, and times, which are subsequently converted to arrays and returned as a list of arrays.
+     *
+     * @param titles an array of movie titles for which details are to be fetched.
+     * @return a list containing arrays of strings representing the fetched movie details.
+     *         Each array contains details for titles, descriptions, and times, respectively.
+     * @throws SQLException if an SQL exception occurs during the execution of the database query.
+     */
     private List<String[]> fetchMoviesByTitles (String[] titles){
         List<String> names = new ArrayList<>();
         List<String> descriptions = new ArrayList<>();
@@ -186,6 +228,16 @@ public class FilmReport {
 
         return movieData;
     }
+    /**
+     * Fetches all movie details (titles, descriptions, and times) in alphabetical order.
+     * The method queries the database to retrieve all movie details, ordered alphabetically by title.
+     * It constructs and executes a SQL query to fetch movie details for all movies in the database.
+     * The retrieved movie details are then added to separate lists for titles, descriptions, and times,
+     * which are subsequently converted to arrays and returned as a list of arrays.
+     *
+     * @return a list containing arrays of strings representing the fetched movie details.
+     *         Each array contains details for titles, descriptions, and times, respectively.
+     */
     private List<String[]> fetchMoviesAlphabetical() {
         List<String> names = new ArrayList<>();
         List<String> descriptions = new ArrayList<>();
@@ -220,11 +272,32 @@ public class FilmReport {
 
         return movieData;
     }
-
+    /**
+     * Checks if two movies are similar based on their descriptions and running times.
+     * The method compares the descriptions of two movies to determine if they contain a common word
+     * with exactly five letters. It also checks if the difference in running times between the two movies
+     * is two minutes or less. Movies cannot be similar to themselves.
+     *
+     * @param fiveWordFirst  the description of the first movie.
+     * @param fiveWordSecond the description of the second movie.
+     * @param minsFirst      the running time in minutes of the first movie.
+     * @param minsSecond     the running time in minutes of the second movie.
+     * @return true if the movies are considered similar based on the defined criteria, false otherwise.
+     */
     private boolean areSimilar(String fiveWordFirst,String fiveWordSecond,int minsFirst,int minsSecond){
         return ((WordWithFiveLetters(fiveWordFirst)!=""&& WordWithFiveLetters(fiveWordSecond)!="") && (fiveWordFirst!=fiveWordSecond)
                 &&(WordWithFiveLetters(fiveWordFirst) == WordWithFiveLetters(fiveWordSecond))) && (minsFirst-minsSecond<=2 || minsSecond-minsFirst<=2);
     }
+    /**
+     * Fetches the first word with five letters from the given description string.
+     * The method iterates through the characters of the description string until it finds
+     * the first word with exactly five letters. If the description string is less than five letters
+     * or a word with five letters is not found, the method returns an empty string.
+     *
+     * @param s the description string from which to fetch the word with five letters.
+     * @return the first word with five letters found in the description string, or an empty string
+     *         if the description string is less than five letters or a word with five letters is not found.
+     */
     private String WordWithFiveLetters(String s){
         if(s.length()<5){
             System.out.println("String s has a length lower than 5 at: WordWithFiveLetters");
