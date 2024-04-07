@@ -1,3 +1,4 @@
+import java.io.*;
 import java.rmi.UnexpectedException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ public class FilmReport {
     final static  String DB_URL = "jdbc:mysql://localhost:3306/sakila";
     private String username;
     private  String password;
+
     Connection connection;
     /**
      * Constructs a FilmReport object with the provided username and password.
@@ -24,7 +26,8 @@ public class FilmReport {
         this.password=password;
         try {
             connection = DriverManager.getConnection(DB_URL, this.username, this.password);
-            createTables();
+
+
         } catch (SQLException e) {
             e.printStackTrace(); // Handle connection failure
             throw e;
@@ -32,23 +35,31 @@ public class FilmReport {
     }
     private void createTables() {
         try (Statement statement = connection.createStatement()) {
-            // Create actor table
-            String createActorTableSQL = "CREATE TABLE actor (" +
-                    "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
-                    "first_name VARCHAR(50) NOT NULL," +
-                    "last_name VARCHAR(50) NOT NULL)";
+            // Check if actor table exists
+            ResultSet resultSet = connection.getMetaData().getTables(null, null, "actor", null);
+            if (!resultSet.next()) {
+                // Create actor table
+                String createActorTableSQL = "CREATE TABLE actor (" +
+                        "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "first_name VARCHAR(50) NOT NULL," +
+                        "last_name VARCHAR(50) NOT NULL)";
 
-            statement.executeUpdate(createActorTableSQL);
+                statement.executeUpdate(createActorTableSQL);
+            }
 
-            // Create film table
-            String createFilmTableSQL = "CREATE TABLE film (" +
-                    "film_id INT AUTO_INCREMENT PRIMARY KEY," +
-                    "title VARCHAR(255) NOT NULL," +
-                    "description TEXT," +  // Adding description column
-                    "length_minutes INT UNSIGNED," + // Adding length_minutes column
-                    "CONSTRAINT fk_actor_film FOREIGN KEY (film_id) REFERENCES actor(actor_id))"; // Adding foreign key constraint
+            // Check if film table exists
+            resultSet = connection.getMetaData().getTables(null, null, "film", null);
+            if (!resultSet.next()) {
+                // Create film table
+                String createFilmTableSQL = "CREATE TABLE film (" +
+                        "film_id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "title VARCHAR(255) NOT NULL," +
+                        "description TEXT," +  // Adding description column
+                        "length_minutes INT UNSIGNED," + // Adding length_minutes column
+                        "CONSTRAINT fk_actor_film FOREIGN KEY (film_id) REFERENCES actor(actor_id))"; // Adding foreign key constraint
 
-            statement.executeUpdate(createFilmTableSQL);
+                statement.executeUpdate(createFilmTableSQL);
+            }
 
             System.out.println("Tables created successfully.");
 
@@ -56,6 +67,7 @@ public class FilmReport {
             e.printStackTrace();
         }
     }
+
     /**
      * Retrieves a list of film titles featuring an actor with the specified first name and last name.
      * The method executes a SQL query to select film titles from the database, filtering films by

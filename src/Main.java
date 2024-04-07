@@ -53,8 +53,14 @@ public class Main {
                 String lastName = s.nextLine();
                 try {
                     String[] arr = f.getFilmsByActor(firstName,lastName);
-                    for (int i = 0; i < arr.length; i++) {
-                        System.out.println(arr[i]);
+                    if(arr.length==0){
+                        System.out.println("No movies found");
+
+                    }
+                    else{
+                        for (int i = 0; i < arr.length; i++) {
+                            System.out.println(arr[i]);
+                        }
                     }
 
                 }
@@ -69,8 +75,14 @@ public class Main {
                 try{
                     String[] arr= enterTitles();
                     arr= f.getSimilarTitles(arr);
-                    for (int i = 0; i < arr.length; i++) {
-                        System.out.println(arr[i]);
+                    if(arr.length==0){
+                        System.out.println("No movies found");
+
+                    }
+                    else{
+                        for (int i = 0; i < arr.length; i++) {
+                            System.out.println(arr[i]);
+                        }
                     }
                 }catch (Exception e){
                     e.printStackTrace();
