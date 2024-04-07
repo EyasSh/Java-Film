@@ -47,11 +47,16 @@ public class Main {
         switch (optionNumber)
         {
             case 1:
+                System.out.println("Enter  Actor first Name ");
                 String firstName = s.nextLine();
+                System.out.println("Enter  Actor last Name ");
                 String lastName = s.nextLine();
                 try {
                     String[] arr = f.getFilmsByActor(firstName,lastName);
-                    System.out.println(arr);
+                    for (int i = 0; i < arr.length; i++) {
+                        System.out.println(arr[i]);
+                    }
+
                 }
                 catch (Exception e){
                     e= new Exception();
@@ -63,7 +68,10 @@ public class Main {
             case 2:
                 try{
                     String[] arr= enterTitles();
-                    System.out.println(f.getSimilarTitles(arr));
+                    arr= f.getSimilarTitles(arr);
+                    for (int i = 0; i < arr.length; i++) {
+                        System.out.println(arr[i]);
+                    }
                 }catch (Exception e){
                     e.printStackTrace();
                     System.out.println("Something went wrong");

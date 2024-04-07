@@ -88,6 +88,7 @@ public class FilmReport {
                 String filmTitle = set.getString("title");
                 films.add(filmTitle);
             }
+            connection.close();
         } catch (SQLException e) {
             throw  e;
         }
@@ -214,9 +215,11 @@ public class FilmReport {
                         descriptions.add(description);
                         times.add(String.valueOf(lengthMinutes));
                     }
+                    connection.close();
                 }
             }
         } catch (SQLException e) {
+
             e.printStackTrace();
         }
 
@@ -259,6 +262,7 @@ public class FilmReport {
                     descriptions.add(description);
                     times.add(String.valueOf(lengthMinutes));
                 }
+                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
