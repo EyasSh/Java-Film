@@ -13,8 +13,9 @@ public class Main {
         switch (actionNum)
         {
             case 1:
-
+                System.out.println("Enter Username");
                 String username = s.nextLine();
+                System.out.println("Enter Password");
                 String password = s.nextLine();
                 try {
                     FilmReport f = new FilmReport(username,password);
@@ -33,6 +34,7 @@ public class Main {
                 return;
         }
         System.out.println("\033[H\033[J");
+        System.out.flush();
 
     }
     private static void ActionPrompt(FilmReport f){
