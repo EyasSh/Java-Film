@@ -26,6 +26,7 @@ public class FilmReport {
         this.password=password;
         try {
             connection = DriverManager.getConnection(DB_URL, this.username, this.password);
+            System.out.println("Connected to database");
             createTables();
 
         } catch (SQLException e) {
@@ -35,33 +36,44 @@ public class FilmReport {
     }
     private void createTables() {
         try (Statement statement = connection.createStatement()) {
-            // Check if actor table exists
-            ResultSet resultSet = connection.getMetaData().getTables(null, null, "actor", null);
-            if (!resultSet.next()) {
-                // Create actor table
-                String createActorTableSQL = "CREATE TABLE actor (" +
-                        "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
-                        "first_name VARCHAR(50) NOT NULL," +
-                        "last_name VARCHAR(50) NOT NULL)";
+            // Check if actor table exists and create if not
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS actor (" +
+                    "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "first_name VARCHAR(50) NOT NULL UNIQUE," +
+                    "last_name VARCHAR(50) NOT NULL UNIQUE)");
+            System.out.println("Actor table created/exists");
 
-                statement.executeUpdate(createActorTableSQL);
-            }
+            // Insert actors
+            statement.executeUpdate("INSERT INTO actor (first_name, last_name) VALUES ('tom', 'ellis')");
+            statement.executeUpdate("INSERT INTO actor (first_name, last_name) VALUES ('chloe', 'decker')");
+            System.out.println("Actors added");
 
-            // Check if film table exists
-            resultSet = connection.getMetaData().getTables(null, null, "film", null);
-            if (!resultSet.next()) {
-                // Create film table
-                String createFilmTableSQL = "CREATE TABLE film (" +
-                        "film_id INT AUTO_INCREMENT PRIMARY KEY," +
-                        "title VARCHAR(255) NOT NULL," +
-                        "description TEXT," +  // Adding description column
-                        "length_minutes INT UNSIGNED," + // Adding length_minutes column
-                        "CONSTRAINT fk_actor_film FOREIGN KEY (film_id) REFERENCES actor(actor_id))"; // Adding foreign key constraint
 
-                statement.executeUpdate(createFilmTableSQL);
-            }
+            // Check if film table exists and create if not
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS film (" +
+                    "film_id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "title VARCHAR(255) NOT NULL," +
+                    "description TEXT," +
+                    "length_minutes INT," +
+                    "actor_first_name VARCHAR(50)," +  // Adding actor_first_name column
+                    "actor_last_name VARCHAR(50)," +   // Adding actor_last_name column
+                    "CONSTRAINT fk_actor_film FOREIGN KEY (actor_first_name, actor_last_name) REFERENCES actor(first_name, last_name)" +
+                    ")");
 
-            System.out.println("Tables created successfully.");
+            System.out.println("Films added");
+
+            // Insert films
+            // Films with the first actor
+            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Lucifer', 'Actor Description 1', 120, 'tom','ellis')");
+            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('lucy', 'Actor Description 2', 121, 'tom','ellis')");
+
+            // Films with the second actor
+            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Hot', 'Actor Description 1', 120, 'chloe','decker')");
+            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('tub', 'Actor Description 1', 150, 'chloe','decker')");
+            System.out.println("Films added2");
+
+            System.out.println("Tables and data created successfully.");
+            connection.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
