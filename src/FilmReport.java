@@ -26,7 +26,7 @@ public class FilmReport {
         this.password=password;
         try {
             connection = DriverManager.getConnection(DB_URL, this.username, this.password);
-
+            createTables();
 
         } catch (SQLException e) {
             e.printStackTrace(); // Handle connection failure
