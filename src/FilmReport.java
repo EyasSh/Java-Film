@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilmReport {
-    final static  String DB_URL = "jdbc:mysql://localhost:3306/sakila";
+    final static  String DB_URL = "jdbc:mysql://localhost:3306/sakila?user=root";
     private String username;
     private  String password;
 
@@ -34,49 +34,95 @@ public class FilmReport {
             throw e;
         }
     }
-    private void createTables() {
+    private void createTables() throws SQLException {
         try (Statement statement = connection.createStatement()) {
+
+            // Flag to track if tables were created (prevents redundant data insertion)
+            boolean tablesCreated = false;
+
             // Check if actor table exists and create if not
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS actor (" +
-                    "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
-                    "first_name VARCHAR(50) NOT NULL UNIQUE," +
-                    "last_name VARCHAR(50) NOT NULL UNIQUE)");
-            System.out.println("Actor table created/exists");
+            String sql = "SHOW TABLES LIKE 'actor'";
+            ResultSet rs = statement.executeQuery(sql);
+            if (!rs.next()) { // Table doesn't exist
+                tablesCreated = true;
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS actor (" +
+                        "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
+                        "first_name VARCHAR(50) NOT NULL UNIQUE," +
+                        "last_name VARCHAR(50) NOT NULL UNIQUE)");
 
-            // Insert actors
-            statement.executeUpdate("INSERT INTO actor (first_name, last_name) VALUES ('tom', 'ellis')");
-            statement.executeUpdate("INSERT INTO actor (first_name, last_name) VALUES ('chloe', 'decker')");
-            System.out.println("Actors added");
+            }
+            rs.close();
 
+            // Check if film table exists and create if not (only if tables were created)
+            if (tablesCreated) {
+                sql = "SHOW TABLES LIKE 'film'";
+                rs = statement.executeQuery(sql);
+                if (!rs.next()) { // Table doesn't exist
+                    tablesCreated = true;
+                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS film (" +
+                            "film_id INT AUTO_INCREMENT PRIMARY KEY," +
+                            "title VARCHAR(255) NOT NULL," +
+                            "description MEDIUMTEXT," +
+                            "length_minutes INT," + // Ensure data type is appropriate for movie lengths +
+                            "actor_first_name VARCHAR(50)," +  // Adding actor_first_name column
+                            "actor_last_name VARCHAR(50)," +   // Adding actor_last_name column
+                            "CONSTRAINT fk_actor_film FOREIGN KEY (actor_first_name, actor_last_name) REFERENCES actor(first_name, last_name)" +
+                            ")");
 
-            // Check if film table exists and create if not
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS film (" +
-                    "film_id INT AUTO_INCREMENT PRIMARY KEY," +
-                    "title VARCHAR(255) NOT NULL," +
-                    "description TEXT," +
-                    "length_minutes INT," +
-                    "actor_first_name VARCHAR(50)," +  // Adding actor_first_name column
-                    "actor_last_name VARCHAR(50)," +   // Adding actor_last_name column
-                    "CONSTRAINT fk_actor_film FOREIGN KEY (actor_first_name, actor_last_name) REFERENCES actor(first_name, last_name)" +
-                    ")");
+                }
+            }
+            rs.close();
 
-            System.out.println("Films added");
+            // Check if film_actor table exists and create if not (only if tables were created)
+            sql = "SHOW TABLES LIKE 'film_actor'";
+            rs = statement.executeQuery(sql);
+            if (!rs.next()) {
 
-            // Insert films
-            // Films with the first actor
-            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Lucifer', 'Actor Description 1', 120, 'tom','ellis')");
-            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('lucy', 'Actor Description 2', 121, 'tom','ellis')");
+                if (!rs.next()) { // Table doesn't exist
+                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS film_actor (" +
+                            "film_id INT," +
+                            "actor_id INT," +
+                            "PRIMARY KEY (film_id, actor_id)," +  // Composite primary key for both film and actor references
+                            "FOREIGN KEY (film_id) REFERENCES film(film_id)," +
+                            "FOREIGN KEY (actor_id) REFERENCES actor(actor_id)" +
+                            ")");
+                }
+            }
+            rs.close();
 
-            // Films with the second actor
-            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Hot', 'Actor Description 1', 120, 'chloe','decker')");
-            statement.executeUpdate("INSERT INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('tub', 'Actor Description 1', 150, 'chloe','decker')");
-            System.out.println("Films added2");
+            // Check if film table exists and create if not (only if tables were created)
+            sql = "SHOW TABLES LIKE 'film'";
+            rs = statement.executeQuery(sql);
+            if (!rs.next()) {
 
-            System.out.println("Tables and data created successfully.");
-            connection.close();
+                if (!rs.next()) { // Table doesn't exist
+                    statement.executeUpdate("CREATE TABLE IF NOT EXISTS film (" +
+                            "film_id INT AUTO_INCREMENT PRIMARY KEY," +
+                            "title VARCHAR(255) NOT NULL," +
+                            "description MEDIUMTEXT," +
+                            "length_minutes INT," + // Ensure data type is appropriate for movie lengths +
+                            "actor_first_name VARCHAR(50)," +
+                            "actor_last_name VARCHAR(50)," +
+                            "CONSTRAINT fk_actor_film FOREIGN KEY (actor_first_name, actor_last_name) REFERENCES actor(first_name, last_name)" +
+                            ")");
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+                    // Insert actors (using REPLACE to prevent duplicates)
+                    statement.executeUpdate("REPLACE INTO actor (first_name, last_name) VALUES ('tom', 'ellis')");
+                    statement.executeUpdate("REPLACE INTO actor (first_name, last_name) VALUES ('chloe', 'decker')");
+
+                    System.out.println("Actors added");
+
+                    // Insert films (using INSERT IGNORE to prevent duplicates based on actor names)
+                    statement.executeUpdate("INSERT IGNORE INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Lucifer', 'Actor Description 1', 120, 'tom','ellis')");
+                    statement.executeUpdate("INSERT IGNORE INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('lucy', 'Actor Description 2', 121, 'tom','ellis')");
+                    statement.executeUpdate("INSERT IGNORE INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('Hot', 'Actor Description 1', 120, 'chloe','decker')");
+                    statement.executeUpdate("INSERT IGNORE INTO film (title, description, length_minutes, actor_first_name,actor_last_name) VALUES ('tub', 'Actor Description 1', 150, 'chloe','decker')");
+
+                    System.out.println("Films added");
+                }
+            }
+            System.out.println("Tables and data created successfully (if not already existing).");
+
         }
     }
 

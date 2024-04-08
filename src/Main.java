@@ -65,7 +65,6 @@ public class Main {
 
                 }
                 catch (Exception e){
-                    e= new Exception();
                     e.getMessage();
                     e.printStackTrace();
                 }
