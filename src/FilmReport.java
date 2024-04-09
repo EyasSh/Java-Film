@@ -99,8 +99,7 @@ public class FilmReport {
 
         else
         {
-
-                List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
+            List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
 
             if(moviesByTitlesData.size()==3)
             {
@@ -110,14 +109,15 @@ public class FilmReport {
                 String[] descriptionsFromTitles = moviesByTitlesData.get(1);
                 String[] timesFromTitles =moviesByTitlesData.get(2);
 
-                // Declaring result list
-                List<String> resultList = new ArrayList<>();
+
                 String similarTitles= "";
                 for (int i =0; i< titlesASC.length;i++)
                 {
                     similarTitles=titlesASC[i];
                     for(int j=0; j<titlesASC.length;j++)
                     {
+                        if(i==j)
+                            continue;
                         if(!areSimilar(descriptionsFromTitles[i],descriptionsFromTitles[j],Integer.parseInt(timesFromTitles[i]),Integer.parseInt(timesFromTitles[j]))){
                             continue;
                         }
@@ -127,7 +127,6 @@ public class FilmReport {
                     if(similarTitles.equals(titlesASC[i])){
                         continue;
                     }
-
                     else{
                         titlesASC[i]=similarTitles;
                         similarTitles="";
