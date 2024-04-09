@@ -101,40 +101,40 @@ public class FilmReport {
         {
 
                 List<String[]> moviesByTitlesData = fetchMoviesByTitles(titles);
-                List<String[]> allMovies = fetchMoviesAlphabetical();
-            if(allMovies.size()==3 && moviesByTitlesData.size()==3)
+
+            if(moviesByTitlesData.size()==3)
             {
                 //get the data from the title arrList
 
                 String[] titlesASC = moviesByTitlesData.get(0);
                 String[] descriptionsFromTitles = moviesByTitlesData.get(1);
                 String[] timesFromTitles =moviesByTitlesData.get(2);
-                //get the data of all movies
-                String[] allTitles =allMovies.get(0);
-                String[] allDescriptions = allMovies.get(1);
-                String[] allTimes = allMovies.get(2);
+
                 // Declaring result list
                 List<String> resultList = new ArrayList<>();
                 String similarTitles= "";
                 for (int i =0; i< titlesASC.length;i++)
                 {
-                    for(int j=0; j<allTitles.length;j++)
+                    similarTitles=titlesASC[i];
+                    for(int j=0; j<titlesASC.length;j++)
                     {
-                        if(!areSimilar(descriptionsFromTitles[i],allDescriptions[j],Integer.parseInt(timesFromTitles[i]),Integer.parseInt(allTimes[j]))){
+                        if(!areSimilar(descriptionsFromTitles[i],descriptionsFromTitles[j],Integer.parseInt(timesFromTitles[i]),Integer.parseInt(timesFromTitles[j]))){
                             continue;
                         }
                         else
-                            similarTitles+=":"+allTitles[j];
+                            similarTitles+=":"+titlesASC[j];
                     }
-                    if(similarTitles.isEmpty())
+                    if(similarTitles.equals(titlesASC[i])){
                         continue;
+                    }
+
                     else{
-                        resultList.add(titlesASC[i]+":"+similarTitles);
+                        titlesASC[i]=similarTitles;
                         similarTitles="";
                         continue;
                     }
                 }
-                return resultList.toArray(new String[resultList.size()]);
+                return titlesASC;
 
             }
             else
