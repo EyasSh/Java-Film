@@ -49,7 +49,7 @@ public class FilmReport {
                         "actor_id INT AUTO_INCREMENT PRIMARY KEY," +
                         "first_name VARCHAR(50) NOT NULL UNIQUE," +
                         "last_name VARCHAR(50) NOT NULL UNIQUE)");
-
+                System.out.println("Table actor created");
             }
             rs.close();
 
@@ -68,7 +68,7 @@ public class FilmReport {
                             "actor_last_name VARCHAR(50)," +   // Adding actor_last_name column
                             "CONSTRAINT fk_actor_film FOREIGN KEY (actor_first_name, actor_last_name) REFERENCES actor(first_name, last_name)" +
                             ")");
-
+                    System.out.println("Table film created");
                 }
             }
             rs.close();
@@ -86,6 +86,7 @@ public class FilmReport {
                             "FOREIGN KEY (film_id) REFERENCES film(film_id)," +
                             "FOREIGN KEY (actor_id) REFERENCES actor(actor_id)" +
                             ")");
+                    System.out.println("Table film actor created");
                 }
             }
             rs.close();
